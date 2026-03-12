@@ -41,24 +41,24 @@
       AFRAME.registerComponent('lock-horizon', {
         init: function() {
           this.dashboard = document.getElementById('dashboard');
-          this.dashboard.object3D.visible = false;
+          this.target = this.el;
         },
         tick: function() {
-          if (!this.dashboard || !contentVisible) return;
+          if (!this.dashboard) return;
           const camera = this.el.sceneEl.camera;
           if (!camera) return;
 
-          const target = this.el;
-          if (target.object3D.visible) {
-            target.object3D.getWorldPosition(lastKnownPosition);
-            target.object3D.getWorldQuaternion(lastKnownRotation);
+          if (contentVisible && this.target.object3D.visible) {
+            this.target.object3D.getWorldPosition(lastKnownPosition);
           }
 
-          this.dashboard.object3D.position.copy(lastKnownPosition);
-          this.dashboard.object3D.position.z += 0.3;
-          
-          const cameraPos = camera.position;
-          this.dashboard.object3D.lookAt(cameraPos.x, cameraPos.y, cameraPos.z);
+          if (contentVisible) {
+            this.dashboard.object3D.position.copy(lastKnownPosition);
+            this.dashboard.object3D.position.z += 0.3;
+            
+            const cameraPos = camera.position;
+            this.dashboard.object3D.lookAt(cameraPos.x, cameraPos.y, cameraPos.z);
+          }
         }
       });
 
