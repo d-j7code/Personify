@@ -32,18 +32,16 @@
       });
 
       AFRAME.registerComponent('lock-horizon', {
+        init: function() {
+          this.dashboard = document.getElementById('dashboard');
+        },
         tick: function() {
-          const target = this.el;
+          if (!this.dashboard) return;
           const camera = this.el.sceneEl.camera;
           if (!camera) return;
 
-          const targetPos = new THREE.Vector3();
-          target.object3D.getWorldPosition(targetPos);
-
-          const dashboard = document.getElementById('dashboard');
-          dashboard.object3D.position.copy(targetPos);
-          dashboard.object3D.position.y += 0.3;
-          dashboard.object3D.lookAt(camera.position);
+          const cameraPos = camera.position;
+          this.dashboard.object3D.lookAt(cameraPos.x, cameraPos.y, cameraPos.z);
         }
       });
     </script>
@@ -62,9 +60,9 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0" marker-debug lock-horizon>
+      <a-entity mindar-image-target="targetIndex: 0" marker-debug>
         
-        <a-entity id="dashboard" position="0 0.3 0" scale="0.8 0.8 0.8">
+        <a-entity id="dashboard" position="0 0 0.3" scale="0.5 0.5 0.5" lock-horizon>
           
           <a-plane width="2.2" height="1.4" color="#1a1a1a" opacity="0.9"></a-plane>
 
