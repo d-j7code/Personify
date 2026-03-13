@@ -71,17 +71,28 @@ status.style.color = "#00ffc3"
 AFRAME.registerComponent('marker-handler', {
 schema: {
 studentName: { type: "string" },
-studentId: { type: "string" }
+studentId: { type: "string" },
+targetIndex: { type: "int" }
 },
 init: function () {
-const label = `${this.data.studentName} (${this.data.studentId})`
+const label = `[${this.data.targetIndex}] ${this.data.studentName} (${this.data.studentId})`
 
 this.el.addEventListener("targetFound", () => {
+console.log("targetFound", {
+targetIndex: this.data.targetIndex,
+studentId: this.data.studentId,
+studentName: this.data.studentName
+})
 activeDetections.add(label)
 updateStatusText()
 })
 
 this.el.addEventListener("targetLost", () => {
+console.log("targetLost", {
+targetIndex: this.data.targetIndex,
+studentId: this.data.studentId,
+studentName: this.data.studentName
+})
 activeDetections.delete(label)
 updateStatusText()
 })
@@ -117,7 +128,7 @@ this.el.object3D.position.y = Math.sin(time/700)*0.02
 function createStudentCard(student) {
 const entity = document.createElement("a-entity")
 entity.setAttribute("mindar-image-target", `targetIndex:${student.targetIndex}`)
-entity.setAttribute("marker-handler", `studentName:${student.name}; studentId:${student.id}`)
+entity.setAttribute("marker-handler", `studentName:${student.name}; studentId:${student.id}; targetIndex:${student.targetIndex}`)
 
 entity.innerHTML = `
 <a-entity billboard float scale="0.6 0.6 0.6">
@@ -194,7 +205,7 @@ Initializing AR...
 
 
 <a-scene id="arScene"
-mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF:0.001; filterBeta:50;"
+mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF:0.02; filterBeta:10; warmupTolerance: 5; missTolerance: 3;"
 color-space="sRGB"
 renderer="colorManagement:true"
 vr-mode-ui="enabled:false"
