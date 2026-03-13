@@ -110,10 +110,7 @@ this.el.object3D.lookAt(cam.position)
 AFRAME.registerComponent("click-handler", {
 schema:{type:"string"},
 init:function(){
-this.el.addEventListener("mousedown",()=>{
-window.open(this.data,"_blank")
-})
-this.el.addEventListener("touchend",()=>{
+this.el.addEventListener("click",()=>{
 window.open(this.data,"_blank")
 })
 }
@@ -156,14 +153,14 @@ entity.innerHTML = `
 
 <a-text value="CONNECT" align="center" color="#00ffd5" position="0 -1.25 0.02" width="3"></a-text>
 
-<a-entity class="clickable" click-handler="${student.website}" position="-0.7 -1.6 0.05">
-<a-plane width="0.9" height="0.4" color="#00aaff"></a-plane>
+<a-entity position="-0.7 -1.6 0.05">
+<a-plane class="clickable" click-handler="${student.website}" width="0.9" height="0.4" color="#00aaff"></a-plane>
 <a-image src="#webIcon" width="0.2" height="0.2" position="-0.25 0 0.01"></a-image>
 <a-text value="Portfolio" align="center" position="0.15 0 0.01" width="2" color="#fff"></a-text>
 </a-entity>
 
-<a-entity class="clickable" click-handler="${student.github}" position="0.7 -1.6 0.05">
-<a-plane width="0.9" height="0.4" color="#24292e"></a-plane>
+<a-entity position="0.7 -1.6 0.05">
+<a-plane class="clickable" click-handler="${student.github}" width="0.9" height="0.4" color="#24292e"></a-plane>
 <a-image src="#githubIcon" width="0.2" height="0.2" position="-0.25 0 0.01"></a-image>
 <a-text value="GitHub" align="center" position="0.15 0 0.01" width="2" color="#fff"></a-text>
 </a-entity>
