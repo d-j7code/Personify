@@ -75,26 +75,29 @@ studentId: { type: "string" },
 targetIndex: { type: "int" }
 },
 init: function () {
-const label = `[${this.data.targetIndex}] ${this.data.studentName} (${this.data.studentId})`
+const idx = this.data.targetIndex
+const student = students.find(s => s.targetIndex === idx)
+const label = `[${idx}] ${this.data.studentName} (${this.data.studentId})`
 
 this.el.addEventListener("targetFound", () => {
-console.log("targetFound", {
-targetIndex: this.data.targetIndex,
-studentId: this.data.studentId,
-studentName: this.data.studentName
-})
 activeDetections.add(label)
 updateStatusText()
+if (student) {
+const overlay = document.getElementById("link-overlay")
+const portBtn = document.getElementById("overlay-portfolio")
+const ghBtn = document.getElementById("overlay-github")
+portBtn.href = student.website
+ghBtn.href = student.github
+overlay.style.display = "flex"
+}
 })
 
 this.el.addEventListener("targetLost", () => {
-console.log("targetLost", {
-targetIndex: this.data.targetIndex,
-studentId: this.data.studentId,
-studentName: this.data.studentName
-})
 activeDetections.delete(label)
 updateStatusText()
+if (activeDetections.size === 0) {
+document.getElementById("link-overlay").style.display = "none"
+}
 })
 }
 })
@@ -104,15 +107,6 @@ tick: function(){
 const cam = this.el.sceneEl.camera
 if(!cam) return
 this.el.object3D.lookAt(cam.position)
-}
-})
-
-AFRAME.registerComponent("click-handler", {
-schema:{type:"string"},
-init:function(){
-this.el.addEventListener("click",()=>{
-window.open(this.data,"_blank")
-})
 }
 })
 
@@ -154,13 +148,13 @@ entity.innerHTML = `
 <a-text value="CONNECT" align="center" color="#00ffd5" position="0 -1.25 0.02" width="3"></a-text>
 
 <a-entity position="-0.7 -1.6 0.05">
-<a-plane class="clickable" click-handler="${student.website}" width="0.9" height="0.4" color="#00aaff"></a-plane>
+<a-plane width="0.9" height="0.4" color="#00aaff"></a-plane>
 <a-image src="#webIcon" width="0.2" height="0.2" position="-0.25 0 0.01"></a-image>
 <a-text value="Portfolio" align="center" position="0.15 0 0.01" width="2" color="#fff"></a-text>
 </a-entity>
 
 <a-entity position="0.7 -1.6 0.05">
-<a-plane class="clickable" click-handler="${student.github}" width="0.9" height="0.4" color="#24292e"></a-plane>
+<a-plane width="0.9" height="0.4" color="#24292e"></a-plane>
 <a-image src="#githubIcon" width="0.2" height="0.2" position="-0.25 0 0.01"></a-image>
 <a-text value="GitHub" align="center" position="0.15 0 0.01" width="2" color="#fff"></a-text>
 </a-entity>
@@ -200,6 +194,23 @@ color:yellow;font-family:sans-serif">
 Initializing AR...
 </div>
 
+<div id="link-overlay"
+style="display:none;position:absolute;bottom:40px;left:50%;
+transform:translateX(-50%);gap:16px;z-index:100;">
+<a id="overlay-portfolio" href="" target="_blank" rel="noopener"
+style="display:flex;align-items:center;gap:8px;
+background:#00aaff;color:#fff;text-decoration:none;
+padding:12px 20px;border-radius:8px;
+font-family:sans-serif;font-size:16px;font-weight:bold;
+box-shadow:0 4px 15px rgba(0,170,255,0.5);">&#127760; Portfolio</a>
+<a id="overlay-github" href="" target="_blank" rel="noopener"
+style="display:flex;align-items:center;gap:8px;
+background:#24292e;color:#fff;text-decoration:none;
+padding:12px 20px;border-radius:8px;
+font-family:sans-serif;font-size:16px;font-weight:bold;
+box-shadow:0 4px 15px rgba(0,0,0,0.5);">&#128025; GitHub</a>
+</div>
+
 
 <a-scene id="arScene"
 mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF:0.02; filterBeta:10; warmupTolerance: 5; missTolerance: 3;"
@@ -218,9 +229,7 @@ device-orientation-permission-ui="enabled:false">
 
 <a-camera
 position="0 0 0"
-look-controls="enabled:false"
-raycaster="objects:.clickable"
-cursor="rayOrigin:mouse">
+look-controls="enabled:false">
 </a-camera>
 
 
