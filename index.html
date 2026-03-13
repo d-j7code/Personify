@@ -10,19 +10,80 @@
 
 <script>
 
-AFRAME.registerComponent('marker-handler', {
-init: function () {
+const students = [
+// targetIndex must match the image order used when creating targets.mind.
+{
+targetIndex: 0,
+id: "STU-001",
+name: "Farhaan Khan",
+role: "AR Developer",
+bio: "Spatial UI experiments\nUnity and WebXR workflows\nCreative prototyping",
+stack1: "A-Frame - Three.js - JS",
+stack2: "Blender - Unity - C#",
+stack3: "Git - CI - Testing",
+website: "https://example.com/student-two",
+github: "https://github.com/example-two"
+},
+{
+targetIndex: 1,
+id: "STU-002",
+name: "David Joemon",
+role: "Full Stack Engineer",
+bio: "Building scalable products\nModern web architectures\nPassionate about innovation",
+stack1: "React - Node - Python",
+stack2: "MongoDB - PostgreSQL - AWS",
+stack3: "Docker - Git - APIs",
+website: "https://davidajoemon.vercel.app/",
+github: "https://github.com/d-j7code"
+},
 
+{
+targetIndex: 2,
+id: "STU-003",
+name: "Student Three",
+role: "Data + XR",
+bio: "Human-centered analytics\nImmersive data stories\nFast iteration mindset",
+stack1: "Python - FastAPI - SQL",
+stack2: "Pandas - Plotly - Docker",
+stack3: "AR.js - MindAR - Git",
+website: "https://example.com/student-three",
+github: "https://github.com/example-three"
+}
+]
+
+const activeDetections = new Set()
+
+function updateStatusText() {
 const status = document.getElementById("status")
+if (!status) return
+
+if (activeDetections.size === 0) {
+status.innerHTML = "Scanning..."
+status.style.color = "yellow"
+return
+}
+
+const names = [...activeDetections].join(", ")
+status.innerHTML = `Detected: ${names}`
+status.style.color = "#00ffc3"
+}
+
+AFRAME.registerComponent('marker-handler', {
+schema: {
+studentName: { type: "string" },
+studentId: { type: "string" }
+},
+init: function () {
+const label = `${this.data.studentName} (${this.data.studentId})`
 
 this.el.addEventListener("targetFound", () => {
-status.innerHTML = "ID Card Detected"
-status.style.color = "#00ffc3"
+activeDetections.add(label)
+updateStatusText()
 })
 
 this.el.addEventListener("targetLost", () => {
-status.innerHTML = "Scanning..."
-status.style.color = "yellow"
+activeDetections.delete(label)
+updateStatusText()
 })
 }
 })
@@ -53,6 +114,70 @@ this.el.object3D.position.y = Math.sin(time/700)*0.02
 }
 })
 
+function createStudentCard(student) {
+const entity = document.createElement("a-entity")
+entity.setAttribute("mindar-image-target", `targetIndex:${student.targetIndex}`)
+entity.setAttribute("marker-handler", `studentName:${student.name}; studentId:${student.id}`)
+
+entity.innerHTML = `
+<a-entity billboard float scale="0.6 0.6 0.6">
+<a-plane width="3" height="4.2" color="#0c0f18" opacity="0.95" material="shader:standard;metalness:0.4;roughness:0.2"></a-plane>
+<a-plane width="3.05" height="4.25" color="#00ffd5" opacity="0.2" position="0 0 -0.01"></a-plane>
+
+<a-text value="${student.name.toUpperCase()}" align="center" color="#00ffe5" position="0 1.8 0.02" width="5" font="roboto"></a-text>
+<a-text value="${student.role.toUpperCase()}" align="center" color="#ffffff" position="0 1.55 0.02" width="3.5"></a-text>
+<a-text value="ID: ${student.id}" align="center" color="#8fefff" position="0 1.35 0.02" width="3"></a-text>
+
+<a-plane width="2.6" height="0.01" color="#00ffd5" position="0 1.18 0.02"></a-plane>
+
+<a-text value="${student.bio}" align="center" color="#cccccc" width="4" position="0 0.8 0.02"></a-text>
+
+<a-text value="TECH STACK" align="center" color="#00ffd5" position="0 0.35 0.02" width="3"></a-text>
+
+<a-plane width="2.6" height="0.35" color="#1a2130" position="0 0.05 0.02"></a-plane>
+<a-text value="${student.stack1}" align="center" color="#ffffff" position="0 0.05 0.03" width="3.5"></a-text>
+
+<a-plane width="2.6" height="0.35" color="#1a2130" position="0 -0.4 0.02"></a-plane>
+<a-text value="${student.stack2}" align="center" color="#ffffff" position="0 -0.4 0.03" width="3.5"></a-text>
+
+<a-plane width="2.6" height="0.35" color="#1a2130" position="0 -0.85 0.02"></a-plane>
+<a-text value="${student.stack3}" align="center" color="#ffffff" position="0 -0.85 0.03" width="3.5"></a-text>
+
+<a-text value="CONNECT" align="center" color="#00ffd5" position="0 -1.25 0.02" width="3"></a-text>
+
+<a-entity class="clickable" click-handler="${student.website}" position="-0.7 -1.6 0.05">
+<a-plane width="0.9" height="0.4" color="#00aaff"></a-plane>
+<a-image src="#webIcon" width="0.2" height="0.2" position="-0.25 0 0.01"></a-image>
+<a-text value="Portfolio" align="center" position="0.15 0 0.01" width="2" color="#fff"></a-text>
+</a-entity>
+
+<a-entity class="clickable" click-handler="${student.github}" position="0.7 -1.6 0.05">
+<a-plane width="0.9" height="0.4" color="#24292e"></a-plane>
+<a-image src="#githubIcon" width="0.2" height="0.2" position="-0.25 0 0.01"></a-image>
+<a-text value="GitHub" align="center" position="0.15 0 0.01" width="2" color="#fff"></a-text>
+</a-entity>
+
+</a-entity>
+`
+
+return entity
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+const scene = document.getElementById("arScene")
+if (!scene) return
+
+students.forEach((student) => {
+scene.appendChild(createStudentCard(student))
+})
+
+const status = document.getElementById("status")
+if (status) {
+status.innerHTML = `Scanning ${students.length} student IDs...`
+status.style.color = "yellow"
+}
+})
+
 </script>
 
 </head>
@@ -68,7 +193,7 @@ Initializing AR...
 </div>
 
 
-<a-scene
+<a-scene id="arScene"
 mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF:0.001; filterBeta:50;"
 color-space="sRGB"
 renderer="colorManagement:true"
@@ -90,197 +215,6 @@ raycaster="objects:.clickable"
 cursor="rayOrigin:mouse">
 </a-camera>
 
-
-
-<a-entity mindar-image-target="targetIndex:0" marker-handler>
-
-<a-entity billboard float scale="0.6 0.6 0.6">
-
-<!-- MAIN PANEL -->
-
-<a-plane width="3" height="4.2"
-color="#0c0f18"
-opacity="0.95"
-material="shader:standard;metalness:0.4;roughness:0.2">
-</a-plane>
-
-
-<!-- GLOW BORDER -->
-
-<a-plane width="3.05" height="4.25"
-color="#00ffd5"
-opacity="0.2"
-position="0 0 -0.01">
-</a-plane>
-
-
-<!-- NAME -->
-
-<a-text
-value="DAVID JOEMON"
-align="center"
-color="#00ffe5"
-position="0 1.8 0.02"
-width="5"
-font="roboto">
-</a-text>
-
-<a-text
-value="FULL STACK ENGINEER"
-align="center"
-color="#ffffff"
-position="0 1.55 0.02"
-width="3.5">
-</a-text>
-
-
-<!-- DIVIDER -->
-
-<a-plane width="2.6" height="0.01"
-color="#00ffd5"
-position="0 1.3 0.02">
-</a-plane>
-
-
-<!-- DESCRIPTION -->
-
-<a-text
-value="Building scalable products\nModern web architectures\nPassionate about innovation"
-align="center"
-color="#cccccc"
-width="4"
-position="0 0.9 0.02">
-</a-text>
-
-
-<!-- SKILLS TITLE -->
-
-<a-text
-value="TECH STACK"
-align="center"
-color="#00ffd5"
-position="0 0.45 0.02"
-width="3">
-</a-text>
-
-
-<!-- SKILL BOXES -->
-
-<a-plane width="2.6" height="0.35"
-color="#1a2130"
-position="0 0.15 0.02"></a-plane>
-
-<a-text
-value="React • Node • Python"
-align="center"
-color="#ffffff"
-position="0 0.15 0.03"
-width="3.5">
-</a-text>
-
-
-<a-plane width="2.6" height="0.35"
-color="#1a2130"
-position="0 -0.3 0.02"></a-plane>
-
-<a-text
-value="MongoDB • PostgreSQL • AWS"
-align="center"
-color="#ffffff"
-position="0 -0.3 0.03"
-width="3.5">
-</a-text>
-
-
-<a-plane width="2.6" height="0.35"
-color="#1a2130"
-position="0 -0.75 0.02"></a-plane>
-
-<a-text
-value="Docker • Git • APIs"
-align="center"
-color="#ffffff"
-position="0 -0.75 0.03"
-width="3.5">
-</a-text>
-
-
-<!-- LINKS -->
-
-<a-text
-value="CONNECT"
-align="center"
-color="#00ffd5"
-position="0 -1.2 0.02"
-width="3">
-</a-text>
-
-
-<!-- WEBSITE BUTTON -->
-
-<a-entity
-class="clickable"
-click-handler="https://davidajoemon.vercel.app/"
-position="-0.7 -1.6 0.05">
-
-<a-plane
-width="0.9"
-height="0.4"
-color="#00aaff">
-</a-plane>
-
-<a-image
-src="#webIcon"
-width="0.2"
-height="0.2"
-position="-0.25 0 0.01">
-</a-image>
-
-<a-text
-value="Portfolio"
-align="center"
-position="0.15 0 0.01"
-width="2"
-color="#fff">
-</a-text>
-
-</a-entity>
-
-
-
-<!-- GITHUB BUTTON -->
-
-<a-entity
-class="clickable"
-click-handler="https://github.com/d-j7code"
-position="0.7 -1.6 0.05">
-
-<a-plane
-width="0.9"
-height="0.4"
-color="#24292e">
-</a-plane>
-
-<a-image
-src="#githubIcon"
-width="0.2"
-height="0.2"
-position="-0.25 0 0.01">
-</a-image>
-
-<a-text
-value="GitHub"
-align="center"
-position="0.15 0 0.01"
-width="2"
-color="#fff">
-</a-text>
-
-</a-entity>
-
-</a-entity>
-
-</a-entity>
 
 </a-scene>
 
